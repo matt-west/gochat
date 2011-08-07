@@ -10,8 +10,6 @@ import (
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
-var msgCount = 0
-var userCount = 0
 
 func main() {
 	flag.Parse()
@@ -35,8 +33,7 @@ func webSocketProtocolSwitch(c http.ResponseWriter, req *http.Request) {
 type message struct {
 	Text			string
 	Id				int
-	Command		string
-	User			int
+	User			string
 }
 
 var messageChan = make(chan message)
@@ -94,12 +91,7 @@ func clientHandler(ws *websocket.Conn) {
 			break
 		}
 		
-		if m.Command == "newThread" {
-			msgCount++
-			m.Id = msgCount
-		}
-		
-		messageChan <- message{m.Text, m.Id, m.Command, m.User}
+		messageChan <- message{m.Text, m.Id, m.User}
 	}
 }
 
