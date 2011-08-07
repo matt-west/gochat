@@ -29,7 +29,11 @@ func webSocketProtocolSwitch(c http.ResponseWriter, req *http.Request) {
 	}
 }
 
-var messageChan = make(chan []byte)
+type message struct {
+	text			[]byte
+}
+
+var messageChan = make(chan message)
 
 type subscription struct {
 	conn      *websocket.Conn
@@ -46,7 +50,7 @@ func hub() {
 			conns[subscription.conn] = 0, subscription.subscribe
 		case message := <-messageChan:
 			for conn, _ := range conns {
-				if _, err := conn.Write(message); err != nil {
+				if _, err := conn.Write(message.text); err != nil {
 					conn.Close()
 				}
 			}
@@ -63,12 +67,12 @@ func clientHandler(ws *websocket.Conn) {
 	subscriptionChan <- subscription{ws, true}
 
 	for {
-	    buf := make([]byte, 256)
+    buf := make([]byte, 256)
 		n, err := ws.Read(buf)
 		if err != nil {
 			break
 		}
-		messageChan <- buf[0:n]
+		messageChan <- message{buf[0:n]}
 	}
 }
 
