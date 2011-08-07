@@ -19,11 +19,11 @@
         var thread = $('#message'+id+'_'+user);
         
         if(thread[0]) {
-          thread.text(msg);
+          thread.html('<b>' + user + ': </b>' + msg);
         } else {
           
           if (msg != "") {
-            var html = '<div class="msg" id="message'+id+'_'+user+'">'+msg+'</div>';
+            var html = '<div class="msg" id="message'+id+'_'+user+'"><b>'+user+': </b>'+msg+'</div>';
             $('#messages').append(html);
           }
         }
