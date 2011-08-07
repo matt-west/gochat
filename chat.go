@@ -6,9 +6,11 @@ import (
 	"log"
 	"template"
 	"websocket"
+	"json"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
+var msgCount = 0
 
 func main() {
 	flag.Parse()
@@ -30,7 +32,8 @@ func webSocketProtocolSwitch(c http.ResponseWriter, req *http.Request) {
 }
 
 type message struct {
-	text			[]byte
+	Text			string
+	Id				int
 }
 
 var messageChan = make(chan message)
@@ -50,7 +53,14 @@ func hub() {
 			conns[subscription.conn] = 0, subscription.subscribe
 		case message := <-messageChan:
 			for conn, _ := range conns {
-				if _, err := conn.Write(message.text); err != nil {
+				j, err := json.Marshal(message)
+				if err != nil {
+					log.Fatal(err)
+					conn.Close()
+				}
+				
+				if _, err := conn.Write(j); err != nil {
+					log.Fatal(err)
 					conn.Close()
 				}
 			}
@@ -67,12 +77,28 @@ func clientHandler(ws *websocket.Conn) {
 	subscriptionChan <- subscription{ws, true}
 
 	for {
-    buf := make([]byte, 256)
+    buf := make([]byte, 128)
 		n, err := ws.Read(buf)
 		if err != nil {
+			log.Fatal("Reading Buffer: ", err)
 			break
 		}
-		messageChan <- message{buf[0:n]}
+		
+		//b := []byte(`{"Text": "Hello", "Id": 0}`)
+		log.Print(buf)
+		var m message
+		err = json.Unmarshal(buf[0:n], &m)
+		if err != nil {
+			log.Fatal("Parsing JSON: ", buf, m, err)
+			break
+		}
+		
+		if m.Text == "{{CMD.NewThread}}" {
+			msgCount++
+			m.Id = msgCount
+		}
+		
+		messageChan <- message{m.Text, m.Id}
 	}
 }
 

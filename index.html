@@ -30,7 +30,15 @@
         if (!msg.val()) {
             return false;
         }
-        conn.send(msg.val());
+        
+        var jsonMsg = {
+          "Text" : msg.val(),
+          "Id" : 0
+        };
+        
+        var jsonStr = JSON.stringify(jsonMsg);
+        
+        conn.send(jsonStr);
         return false
     });
     
@@ -42,7 +50,15 @@
             return false;
         }
         msg.val('');
-        conn.send('{{CMD.NewThread}}');
+        
+        var jsonMsg = {
+          "Text" : "{{CMD.NewThread}}",
+          "Id" : 0
+        };
+        
+        var jsonStr = JSON.stringify(jsonMsg);
+        
+        conn.send(jsonStr);
         return false
     });
 
@@ -53,7 +69,8 @@
             appendThread($("<div><b>Connection closed.</b></div>"))
         }
         conn.onmessage = function(evt) {
-          var msg = evt.data;
+          var jsonMsg = JSON.parse(evt.data);
+          var msg = jsonMsg.Text;
           
           if (msg == '{{CMD.NewThread}}') {
             // Close the thread
@@ -65,7 +82,7 @@
               $('#messages').append('<div class="msg" id="message'+msgCount+'"></div>')
             }
             
-            appendThread(evt.data)
+            appendThread(msg)
           }
         }
     } else {
