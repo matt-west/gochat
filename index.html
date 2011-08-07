@@ -7,16 +7,29 @@
 
     var conn;
     var msg = $("#msg");
-    var log = $("#messages");
+    var messages = $("#messages");
     
-    currThread = '';
-    msgCount = 0;
-
-    function appendThread(msg) {
-        var d = log[0]
+    var currentId = 0;
+    var userId;
+    
+    function appendThread(id, msg) {
+        var d = messages[0]
         var doScroll = d.scrollTop == d.scrollHeight - d.clientHeight;
         
-        $(currThread).text(msg);
+        if (id != null) {
+          
+          var thread = $('#message'+id);
+          
+          if(thread[0]) {
+            thread.text(msg);
+          } else {
+            var html = '<div class="msg" id="message'+id+'">'+msg+'</div>';
+            $('#messages').append(html);
+          }
+          
+        } else {
+          $('body').append(msg);
+        }
         
         if (doScroll) {
             d.scrollTop = d.scrollHeight - d.clientHeight;
@@ -33,7 +46,9 @@
         
         var jsonMsg = {
           "Text" : msg.val(),
-          "Id" : 0
+          "Id" : currentId,
+          "Command" : "",
+          "User" : userId
         };
         
         var jsonStr = JSON.stringify(jsonMsg);
@@ -53,7 +68,9 @@
         
         var jsonMsg = {
           "Text" : "{{CMD.NewThread}}",
-          "Id" : 0
+          "Id" : currentId,
+          "Command": "newThread",
+          "User" : userId
         };
         
         var jsonStr = JSON.stringify(jsonMsg);
@@ -66,27 +83,26 @@
     if (window["WebSocket"]) {
         conn = new WebSocket("ws://<<@>>/ws");
         conn.onclose = function(evt) {
-            appendThread($("<div><b>Connection closed.</b></div>"))
+            appendThread('', "<div><b>Connection closed.</b></div>");
         }
         conn.onmessage = function(evt) {
           var jsonMsg = JSON.parse(evt.data);
           var msg = jsonMsg.Text;
+          var cmd = jsonMsg.Command;
+          var id = jsonMsg.Id;
+          var user = jsonMsg.User;
           
-          if (msg == '{{CMD.NewThread}}') {
+          if (cmd == 'newThread') {
             // Close the thread
-            currThread = '';
-            msgCount++;
+            currentId = id;
+            $('#messages').append('<div class="msg" id="message'+id+'"></div>')
           } else {
-            if (currThread == '') {
-              currThread = '#message' + msgCount;
-              $('#messages').append('<div class="msg" id="message'+msgCount+'"></div>')
-            }
-            
-            appendThread(msg)
+            currentId = id;
+            appendThread(id, msg);
           }
         }
     } else {
-        appendThread($("<div><b>Your browser does not support WebSockets.</b></div>"))
+        appendThread('', "<div><b>Your browser does not support WebSockets.</b></div>");
     }
     });
 </script>

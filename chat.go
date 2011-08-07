@@ -11,6 +11,7 @@ import (
 
 var addr = flag.String("addr", ":8080", "http service address")
 var msgCount = 0
+var userCount = 0
 
 func main() {
 	flag.Parse()
@@ -34,6 +35,8 @@ func webSocketProtocolSwitch(c http.ResponseWriter, req *http.Request) {
 type message struct {
 	Text			string
 	Id				int
+	Command		string
+	User			int
 }
 
 var messageChan = make(chan message)
@@ -84,8 +87,6 @@ func clientHandler(ws *websocket.Conn) {
 			break
 		}
 		
-		//b := []byte(`{"Text": "Hello", "Id": 0}`)
-		log.Print(buf)
 		var m message
 		err = json.Unmarshal(buf[0:n], &m)
 		if err != nil {
@@ -93,12 +94,12 @@ func clientHandler(ws *websocket.Conn) {
 			break
 		}
 		
-		if m.Text == "{{CMD.NewThread}}" {
+		if m.Command == "newThread" {
 			msgCount++
 			m.Id = msgCount
 		}
 		
-		messageChan <- message{m.Text, m.Id}
+		messageChan <- message{m.Text, m.Id, m.Command, m.User}
 	}
 }
 
