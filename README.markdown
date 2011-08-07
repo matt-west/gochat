@@ -1,5 +1,7 @@
 # Real-Time Messaging using WebSockets, GO and jQuery #
 
-Currently supports basic threading (very buggy)
+Currently supports multi-user threads and real-time updates (as typed).
 
-Thanks to Gary Burd for writting the original GO server code.
+There are still a few bugs that can cause the program to error, however the application should recover and continue to run.
+
+Thanks to Gary Burd for writting the original GO server code which this is based upon.
