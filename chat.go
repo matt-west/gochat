@@ -55,12 +55,12 @@ func hub() {
 			for conn, _ := range conns {
 				j, err := json.Marshal(message)
 				if err != nil {
-					log.Fatal(err)
+					log.Print(err)
 					conn.Close()
 				}
 				
 				if _, err := conn.Write(j); err != nil {
-					log.Fatal(err)
+					log.Print(err)
 					conn.Close()
 				}
 			}
@@ -80,14 +80,14 @@ func clientHandler(ws *websocket.Conn) {
     buf := make([]byte, 128)
 		n, err := ws.Read(buf)
 		if err != nil {
-			log.Fatal("Reading Buffer: ", err)
+			log.Print("Reading Buffer: ", err)
 			break
 		}
 		
 		var m message
 		err = json.Unmarshal(buf[0:n], &m)
 		if err != nil {
-			log.Fatal("Parsing JSON: ", buf, m, err)
+			log.Print("Parsing JSON: ", buf, m, err)
 			break
 		}
 		
