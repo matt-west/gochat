@@ -10,13 +10,17 @@
     var messages = $("#messages");
     
     var currentId = 0;
-    var userName = prompt("What is your email?", "");
+    var userName = prompt("What is your name?", "");
     
     function appendThread(id, user, msg) {
         var d = messages[0]
         var doScroll = d.scrollTop == d.scrollHeight - d.clientHeight;
         
-        var thread = $('#message'+id+'_'+user);
+        if (user == userName) {
+            var thread = $('#message'+currentId+'_'+user);
+        } else {
+            var thread = $('#message'+id+'_'+user);
+        }
         
         if(thread[0]) {
           thread.html('<b>' + user + ': </b>' + msg);
@@ -44,7 +48,8 @@
         var jsonMsg = {
           "Text" : msg.val(),
           "Id" : currentId,
-          "User" : userName
+          "User" : userName,
+          "Command" : ""
         };
         
         var jsonStr = JSON.stringify(jsonMsg);
@@ -67,7 +72,8 @@
         var jsonMsg = {
           "Text" : "",
           "Id" : currentId,
-          "User" : userName
+          "User" : userName,
+          "Command" : "new"
         };
         
         var jsonStr = JSON.stringify(jsonMsg);
@@ -87,8 +93,12 @@
           var msg = jsonMsg.Text;
           var id = jsonMsg.Id;
           var user = jsonMsg.User;
+          var cmd = jsonMsg.Command;
           
-          currentId = id;
+          if (user == userName && cmd == "new") {
+            currentId = id;
+          }
+          
           appendThread(id, user, msg);
         }
     } else {

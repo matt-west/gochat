@@ -34,6 +34,7 @@ type message struct {
 	Text			string
 	Id				int
 	User			string
+	Command   string
 }
 
 var messageChan = make(chan message)
@@ -91,7 +92,7 @@ func clientHandler(ws *websocket.Conn) {
 			break
 		}
 		
-		messageChan <- message{m.Text, m.Id, m.User}
+		messageChan <- message{m.Text, m.Id, m.User, m.Command}
 	}
 }
 
